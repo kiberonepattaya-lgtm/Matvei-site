@@ -429,6 +429,7 @@ G<!DOCTYPE html>
       var ship = false; // true for both plane and wave
       var wave = false;
       var ufo = false;
+      var jet = false;
       var trail = [];
       var UFO_HOP = -560;
       var ORB_Y = GROUND - 100;
@@ -447,6 +448,7 @@ G<!DOCTYPE html>
         ship = false;
         wave = false;
         ufo = false;
+        jet = false;
         trail = [];
         obstacles = [];
         nextSpawn = 700;
@@ -462,7 +464,9 @@ G<!DOCTYPE html>
                    'W', 'f90', 'c110', 'f130', 'c90', 'f110', 'c130', 'f90', 'c110', 'f120', 'c100', 'f100', 'C',
                    's1', 'bs', 's3', 'o6',
                    'U', 'f100', 'c100', 'f60', 'c120', 'f120', 'c80', 'f100', 'c100', 'f80', 'C',
-                   's1', 's2', 't', 's3', 'bs', 'o6', 's2', 's3', 'b2', 's1', 'bs', 's3'];
+                   's1', 's2', 't', 's3', 'bs', 'o6', 's2', 's3', 'b2', 's1',
+                   'J', 'f90', 'c100', 'f110', 'c80', 'f120', 'c100', 'f80', 'c120', 'f100', 'c90', 'f110', 'C',
+                   'bs', 's3', 's1', 'o6', 's2', 't', 's3', 'b2', 'bs', 'o6', 's1', 's2', 't', 's3', 'bs', 's3'];
         var x = 800;
         seq.forEach(function (c) {
           var end;
@@ -479,14 +483,14 @@ G<!DOCTYPE html>
             obstacles.push({ type: 'spike', x: x, w: SIZE * 6 });
             obstacles.push({ type: 'orb', x: x + SIZE * 3 - 16, w: 32, used: false });
             end = x + SIZE * 6;
-          } else if (c === 'P' || c === 'W' || c === 'U' || c === 'C') {
-            obstacles.push({ type: 'portal', x: x, w: 20, kind: { P: 'ship', W: 'wave', U: 'ufo', C: 'cube' }[c], used: false });
+          } else if (c === 'P' || c === 'W' || c === 'U' || c === 'J' || c === 'C') {
+            obstacles.push({ type: 'portal', x: x, w: 20, kind: { P: 'ship', W: 'wave', U: 'ufo', J: 'jet', C: 'cube' }[c], used: false });
             end = x + 20;
           } else if (c.charAt(0) === 'f' || c.charAt(0) === 'c') {
             obstacles.push({ type: c.charAt(0) === 'f' ? 'fpillar' : 'cpillar', x: x, w: SIZE, h: +c.slice(1) });
             end = x + SIZE;
           } else { obstacles.push({ type: 'tower', x: x, w: SIZE }); end = x + SIZE; }
-          x = end + (c === 'P' || c === 'W' || c === 'U' ? 260 : (c.charAt(0) === 'f' || c.charAt(0) === 'c' ? 300 : 340));
+          x = end + (c === 'P' || c === 'W' || c === 'U' || c === 'J' ? 260 : (c.charAt(0) === 'f' || c.charAt(0) === 'c' ? 300 : 340));
         });
         levelEnd = x + 200;
         nextSpawn = Infinity;
@@ -578,7 +582,13 @@ G<!DOCTYPE html>
         obstacles = obstacles.filter(function (o) { return o.x + o.w > dist - 200; });
 
         var prevBottom = y + SIZE;
-        if (ufo) {
+        if (jet) {
+          // jetpack: hold to thrust up, release to drift down; floatier than the plane
+          vy += (jumpHeld ? -1500 : 1100) * dt;
+          vy = Math.max(-300, Math.min(320, vy));
+          y += vy * dt;
+          if (y < CEIL) { y = CEIL; vy = 0; }
+        } else if (ufo) {
           vy = Math.min(vy + 2100 * dt, 700);
           y += vy * dt;
           if (y < CEIL) { y = CEIL; vy = 0; }
@@ -615,6 +625,7 @@ G<!DOCTYPE html>
               ship = o.kind !== 'cube';
               wave = o.kind === 'wave';
               ufo = o.kind === 'ufo';
+              jet = o.kind === 'jet';
               vy = 0;
             }
             continue;
@@ -655,7 +666,8 @@ G<!DOCTYPE html>
           trail = [];
         }
         trail = trail.filter(function (t) { return t.d > dist - 160; });
-        if (ufo) rot = vy * 0.0004;
+        if (jet) rot = 0;
+        else if (ufo) rot = vy * 0.0004;
         else if (wave) rot = vy > 0 ? Math.PI / 4 : (vy < 0 ? -Math.PI / 4 : 0);
         else if (ship) rot = Math.atan2(vy, speedAt(dist)) * 0.8;
         else if (!onGround) rot += 5.2 * dt * 2;
@@ -733,7 +745,7 @@ G<!DOCTYPE html>
             ctx.arc(sx + o.w / 2, ORB_Y, 22, 0, Math.PI * 2);
             ctx.stroke();
           } else if (o.type === 'portal') {
-            ctx.strokeStyle = o.kind === 'ship' ? '#ff4fd8' : (o.kind === 'wave' ? '#4dd2ff' : (o.kind === 'ufo' ? '#7dff4f' : '#ff9d00'));
+            ctx.strokeStyle = o.kind === 'ship' ? '#ff4fd8' : (o.kind === 'wave' ? '#4dd2ff' : (o.kind === 'ufo' ? '#7dff4f' : (o.kind === 'jet' ? '#ff3b3b' : '#ff9d00')));
             ctx.lineWidth = 6;
             ctx.beginPath();
             ctx.ellipse(sx + 10, (CEIL + GROUND) / 2, 14, 100, 0, 0, Math.PI * 2);
@@ -786,7 +798,28 @@ G<!DOCTYPE html>
         ctx.rotate(rot);
         ctx.strokeStyle = '#000';
         ctx.lineWidth = 3;
-        if (ufo) {
+        if (jet) {
+          // jetpack on the cube's back, with a flame while thrusting
+          if (jumpHeld) {
+            ctx.fillStyle = '#ff9d00';
+            ctx.beginPath();
+            ctx.moveTo(-26, 4);
+            ctx.lineTo(-26 - 14 - Math.random() * 12, 12);
+            ctx.lineTo(-26, 20);
+            ctx.closePath();
+            ctx.fill();
+          }
+          ctx.fillStyle = '#ff3b3b';
+          ctx.fillRect(-28, -6, 12, 28);
+          ctx.strokeRect(-28, -6, 12, 28);
+          ctx.fillStyle = '#ffe600';
+          ctx.fillRect(-SIZE / 2 + 2, -SIZE / 2, SIZE - 4, SIZE);
+          ctx.strokeRect(-SIZE / 2 + 2, -SIZE / 2, SIZE - 4, SIZE);
+          ctx.fillStyle = '#000';
+          ctx.fillRect(-6, -8, 6, 6);
+          ctx.fillRect(6, -8, 6, 6);
+          ctx.fillRect(-4, 6, 16, 4);
+        } else if (ufo) {
           // ufo: a saucer with the cube in the dome
           ctx.fillStyle = '#ffe600';
           ctx.beginPath();
