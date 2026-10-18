@@ -135,6 +135,19 @@
       color: white;
       cursor: pointer;
     }
+    #gdMode {
+      position: absolute;
+      top: 16px;
+      left: 16px;
+      font-size: 1rem;
+      font-weight: bold;
+      padding: 10px 16px;
+      border: 2px solid white;
+      border-radius: 8px;
+      background: #111;
+      color: #ffe600;
+      cursor: pointer;
+    }
     #gdHelp {
       margin-top: 12px;
       font-size: 1rem;
@@ -243,6 +256,7 @@
   </div>
 
   <div id="gdOverlay">
+    <button id="gdMode">Level: Endless</button>
     <button id="gdClose">✕ Close (Esc)</button>
     <canvas id="gdCanvas" width="800" height="400"></canvas>
     <div id="gdHelp">Jump: Space / ↑ / click / tap</div>
@@ -402,6 +416,8 @@
       var last = 0;
       var best = 0;
       var jumpHeld = false;
+      var mode = 'endless'; // endless | fingerdash
+      var levelEnd = 0;
 
       var dist, y, vy, onGround, rot, obstacles, nextSpawn;
 
@@ -413,10 +429,34 @@
         rot = 0;
         obstacles = [];
         nextSpawn = 700;
+        if (mode === 'fingerdash') buildLevel();
+      }
+
+      // fixed hand-made level: pattern codes laid out one after another
+      function buildLevel() {
+        var seq = ['s1', 's2', 's1', 'b2', 'bs', 's3', 's1', 's2', 't', 's2', 'bs', 's3',
+                   's1', 'b2', 't', 's3', 's2', 'bs', 's1', 't', 's3', 's2', 'bs', 's3'];
+        var x = 800;
+        seq.forEach(function (c) {
+          var end;
+          if (c === 's1') { obstacles.push({ type: 'spike', x: x, w: SIZE }); end = x + SIZE; }
+          else if (c === 's2') { obstacles.push({ type: 'spike', x: x, w: SIZE * 2 }); end = x + SIZE * 2; }
+          else if (c === 's3') { obstacles.push({ type: 'spike', x: x, w: SIZE * 3 }); end = x + SIZE * 3; }
+          else if (c === 'b2') { obstacles.push({ type: 'block', x: x, w: SIZE * 2 }); end = x + SIZE * 2; }
+          else if (c === 'bs') {
+            obstacles.push({ type: 'block', x: x, w: SIZE });
+            obstacles.push({ type: 'spike', x: x + SIZE + 80, w: SIZE });
+            end = x + SIZE * 2 + 80;
+          } else { obstacles.push({ type: 'tower', x: x, w: SIZE }); end = x + SIZE; }
+          x = end + 340;
+        });
+        levelEnd = x + 200;
+        nextSpawn = Infinity;
       }
 
       // the level speeds up as you go: 380 px/s at the start, up to 600 px/s
       function speedAt(d) {
+        if (mode === 'fingerdash') return 400;
         return Math.min(380 + d * 0.02, 600);
       }
 
@@ -452,7 +492,7 @@
 
       function die() {
         state = 'dead';
-        var score = Math.floor(dist / 10);
+        var score = mode === 'fingerdash' ? Math.floor(dist / levelEnd * 100) : Math.floor(dist / 10);
         if (score > best) best = score;
       }
 
@@ -460,7 +500,7 @@
         if (state === 'ready') {
           reset();
           state = 'playing';
-        } else if (state === 'dead') {
+        } else if (state === 'dead' || state === 'won') {
           reset();
           state = 'playing';
           return;
@@ -474,6 +514,11 @@
       function update(dt) {
         if (state !== 'playing') return;
         dist += speedAt(dist) * dt;
+        if (mode === 'fingerdash' && dist >= levelEnd) {
+          state = 'won';
+          best = Math.max(best, 100);
+          return;
+        }
 
         while (nextSpawn < dist + W + 200) spawn();
         obstacles = obstacles.filter(function (o) { return o.x + o.w > dist - 200; });
@@ -606,14 +651,18 @@
         ctx.fillStyle = '#fff';
         ctx.font = 'bold 22px Arial';
         ctx.textAlign = 'left';
-        ctx.fillText('Score: ' + Math.floor(dist / 10), 16, 32);
+        if (mode === 'fingerdash') {
+          ctx.fillText(Math.min(100, Math.floor(dist / levelEnd * 100)) + '%', 16, 32);
+        } else {
+          ctx.fillText('Score: ' + Math.floor(dist / 10), 16, 32);
+        }
         ctx.textAlign = 'right';
         ctx.fillText('Best: ' + best, W - 16, 32);
 
         ctx.textAlign = 'center';
         if (state === 'ready') {
           ctx.font = 'bold 34px Arial';
-          ctx.fillText('Geometry Dash', W / 2, 140);
+          ctx.fillText(mode === 'fingerdash' ? 'Fingerdash' : 'Geometry Dash', W / 2, 140);
           ctx.font = '22px Arial';
           ctx.fillText('Press Space or click to start', W / 2, 180);
         } else if (state === 'dead') {
@@ -623,8 +672,21 @@
           ctx.font = 'bold 40px Arial';
           ctx.fillText('Game Over', W / 2, 150);
           ctx.font = '22px Arial';
-          ctx.fillText('Score: ' + Math.floor(dist / 10) + '   Best: ' + best, W / 2, 190);
+          if (mode === 'fingerdash') {
+            ctx.fillText(Math.floor(dist / levelEnd * 100) + '%   Best: ' + best + '%', W / 2, 190);
+          } else {
+            ctx.fillText('Score: ' + Math.floor(dist / 10) + '   Best: ' + best, W / 2, 190);
+          }
           ctx.fillText('Press Space or click to try again', W / 2, 225);
+        } else if (state === 'won') {
+          ctx.fillStyle = 'rgba(0,0,0,0.5)';
+          ctx.fillRect(0, 0, W, H);
+          ctx.fillStyle = '#ffe600';
+          ctx.font = 'bold 40px Arial';
+          ctx.fillText('Level Complete!', W / 2, 150);
+          ctx.fillStyle = '#fff';
+          ctx.font = '22px Arial';
+          ctx.fillText('Press Space or click to play again', W / 2, 200);
         }
       }
 
@@ -656,6 +718,16 @@
 
       document.getElementById('gdBtn').addEventListener('click', openGame);
       document.getElementById('gdClose').addEventListener('click', closeGame);
+      var bests = { endless: 0, fingerdash: 0 };
+      document.getElementById('gdMode').addEventListener('click', function (e) {
+        bests[mode] = best;
+        mode = mode === 'endless' ? 'fingerdash' : 'endless';
+        best = bests[mode];
+        this.textContent = 'Level: ' + (mode === 'endless' ? 'Endless' : 'Fingerdash');
+        this.blur();
+        reset();
+        state = 'ready';
+      });
 
       document.addEventListener('keydown', function (e) {
         if (!open) return;
