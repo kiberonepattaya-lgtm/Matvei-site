@@ -156,6 +156,23 @@
     #tankBtn:hover {
       background: #222;
     }
+    #colorBtn {
+      position: fixed;
+      top: 16px;
+      left: 16px;
+      z-index: 2;
+      font-size: 1.2rem;
+      font-weight: bold;
+      padding: 12px 20px;
+      border: 2px solid white;
+      border-radius: 8px;
+      background: #111;
+      color: #ffe600;
+      cursor: pointer;
+    }
+    #colorBtn:hover {
+      background: #222;
+    }
     #tkOverlay {
       display: none;
       position: fixed;
@@ -199,6 +216,7 @@
 <body>
   <canvas id="fireworks"></canvas>
 
+  <button id="colorBtn">🎨 Change colour</button>
   <button id="gdBtn">🎮 Geometry Dash</button>
 
   <div class="content">
@@ -239,6 +257,16 @@
   </div>
 
   <script>
+    // ---------- Background colour button ----------
+    (function () {
+      var colors = ['green', '#1e66d0', '#c0392b', '#8e44ad', '#e67e22', '#16a085', '#2c3e50'];
+      var i = 0;
+      document.getElementById('colorBtn').addEventListener('click', function () {
+        i = (i + 1) % colors.length;
+        document.body.style.backgroundColor = colors[i];
+      });
+    })();
+
     // ---------- Boom button ----------
     document.getElementById('boomBtn').addEventListener('click', function () {
       document.getElementById('message').textContent = 'Boom,<Matvei>';
