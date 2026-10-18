@@ -427,6 +427,7 @@ G<!DOCTYPE html>
       var mode = 'endless'; // endless | fingerdash
       var levelEnd = 0;
       var ship = false;
+      var ORB_Y = GROUND - 100;
       var CEIL = 40;
       var SHIP_ACC = 1900;
       var SHIP_MAX = 380;
@@ -447,7 +448,7 @@ G<!DOCTYPE html>
 
       // fixed hand-made level: pattern codes laid out one after another
       function buildLevel() {
-        var seq = ['s1', 's2', 's1', 'b2', 'bs', 's3', 's1', 's2', 't', 's2', 'bs', 's3',
+        var seq = ['s1', 's2', 's1', 'b2', 'bs', 'o6', 's3', 's1', 's2', 't', 's2', 'o6', 'bs', 's3',
                    'P', 'f80', 'c100', 'f120', 'c80', 'f100', 'c120', 'f80', 'c100', 'f100', 'C',
                    's1', 'b2', 't', 's3', 's2', 'bs', 's1', 't', 's3', 's2', 'bs', 's3'];
         var x = 800;
@@ -461,6 +462,11 @@ G<!DOCTYPE html>
             obstacles.push({ type: 'block', x: x, w: SIZE });
             obstacles.push({ type: 'spike', x: x + SIZE + 80, w: SIZE });
             end = x + SIZE * 2 + 80;
+          } else if (c === 'o6') {
+            // long spike run; tap the orb in mid-air to jump a second time
+            obstacles.push({ type: 'spike', x: x, w: SIZE * 6 });
+            obstacles.push({ type: 'orb', x: x + SIZE * 3 - 16, w: 32, used: false });
+            end = x + SIZE * 6;
           } else if (c === 'P' || c === 'C') {
             obstacles.push({ type: 'portal', x: x, w: 20, kind: c === 'P' ? 'ship' : 'cube', used: false });
             end = x + 20;
@@ -528,6 +534,18 @@ G<!DOCTYPE html>
         if (onGround && !ship) {
           vy = JUMP;
           onGround = false;
+        } else if (!onGround && !ship && state === 'playing') {
+          // mid-air tap: use a yellow orb if the cube is touching one
+          for (var k = 0; k < obstacles.length; k++) {
+            var ob = obstacles[k];
+            if (ob.type !== 'orb' || ob.used) continue;
+            var ox = ob.x + ob.w / 2, oy = ORB_Y;
+            if (Math.abs(dist + SIZE / 2 - ox) < 40 && Math.abs(y + SIZE / 2 - oy) < 45) {
+              ob.used = true;
+              vy = JUMP;
+              break;
+            }
+          }
         }
       }
 
@@ -565,6 +583,7 @@ G<!DOCTYPE html>
         var cl = dist, cr = dist + SIZE; // cube in world coordinates (x offset by dist)
         for (var i = 0; i < obstacles.length; i++) {
           var o = obstacles[i];
+          if (o.type === 'orb') continue;
           if (o.type === 'portal') {
             if (!o.used && cl >= o.x) {
               o.used = true;
@@ -667,7 +686,18 @@ G<!DOCTYPE html>
         obstacles.forEach(function (o) {
           var sx = o.x - dist + CUBE_X;
           if (sx > W || sx + o.w < 0) return;
-          if (o.type === 'portal') {
+          if (o.type === 'orb') {
+            ctx.fillStyle = o.used ? 'rgba(255,230,0,0.25)' : 'rgba(255,230,0,0.6)';
+            ctx.strokeStyle = '#ffe600';
+            ctx.lineWidth = 4;
+            ctx.beginPath();
+            ctx.arc(sx + o.w / 2, ORB_Y, 14, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.arc(sx + o.w / 2, ORB_Y, 22, 0, Math.PI * 2);
+            ctx.stroke();
+          } else if (o.type === 'portal') {
             ctx.strokeStyle = o.kind === 'ship' ? '#ff4fd8' : '#ff9d00';
             ctx.lineWidth = 6;
             ctx.beginPath();
