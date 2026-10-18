@@ -141,21 +141,20 @@
     }
     #tankBtn {
       position: fixed;
-      bottom: 6px;
-      left: 6px;
+      top: 64px;
+      right: 16px;
       z-index: 2;
-      width: 28px;
-      height: 28px;
-      padding: 0;
-      font-size: 14px;
-      border: none;
-      border-radius: 6px;
-      background: transparent;
-      opacity: 0.04;
+      font-size: 1rem;
+      font-weight: bold;
+      padding: 10px 16px;
+      border: 2px solid white;
+      border-radius: 8px;
+      background: #111;
+      color: #ffe600;
       cursor: pointer;
     }
-    #tankBtn:hover, #tankBtn:focus {
-      opacity: 0.8;
+    #tankBtn:hover {
+      background: #222;
     }
     #tkOverlay {
       display: none;
@@ -230,7 +229,7 @@
     <div id="gdHelp">Jump: Space / ↑ / click / tap</div>
   </div>
 
-  <button id="tankBtn" aria-label="secret tanks game">🪖</button>
+  <button id="tankBtn">🪖 Tanks</button>
 
   <div id="tkOverlay">
     <button id="tkClose">✕ Close (Esc)</button>
