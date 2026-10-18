@@ -418,6 +418,10 @@
       var jumpHeld = false;
       var mode = 'endless'; // endless | fingerdash
       var levelEnd = 0;
+      var ship = false;
+      var CEIL = 40;
+      var SHIP_ACC = 1900;
+      var SHIP_MAX = 380;
 
       var dist, y, vy, onGround, rot, obstacles, nextSpawn;
 
@@ -427,6 +431,7 @@
         vy = 0;
         onGround = true;
         rot = 0;
+        ship = false;
         obstacles = [];
         nextSpawn = 700;
         if (mode === 'fingerdash') buildLevel();
@@ -435,6 +440,7 @@
       // fixed hand-made level: pattern codes laid out one after another
       function buildLevel() {
         var seq = ['s1', 's2', 's1', 'b2', 'bs', 's3', 's1', 's2', 't', 's2', 'bs', 's3',
+                   'P', 'f80', 'c100', 'f120', 'c80', 'f100', 'c120', 'f80', 'c100', 'f100', 'C',
                    's1', 'b2', 't', 's3', 's2', 'bs', 's1', 't', 's3', 's2', 'bs', 's3'];
         var x = 800;
         seq.forEach(function (c) {
@@ -447,8 +453,14 @@
             obstacles.push({ type: 'block', x: x, w: SIZE });
             obstacles.push({ type: 'spike', x: x + SIZE + 80, w: SIZE });
             end = x + SIZE * 2 + 80;
+          } else if (c === 'P' || c === 'C') {
+            obstacles.push({ type: 'portal', x: x, w: 20, kind: c === 'P' ? 'ship' : 'cube', used: false });
+            end = x + 20;
+          } else if (c.charAt(0) === 'f' || c.charAt(0) === 'c') {
+            obstacles.push({ type: c.charAt(0) === 'f' ? 'fpillar' : 'cpillar', x: x, w: SIZE, h: +c.slice(1) });
+            end = x + SIZE;
           } else { obstacles.push({ type: 'tower', x: x, w: SIZE }); end = x + SIZE; }
-          x = end + 340;
+          x = end + (c === 'P' ? 260 : (c.charAt(0) === 'f' || c.charAt(0) === 'c' ? 300 : 340));
         });
         levelEnd = x + 200;
         nextSpawn = Infinity;
@@ -505,7 +517,7 @@
           state = 'playing';
           return;
         }
-        if (onGround) {
+        if (onGround && !ship) {
           vy = JUMP;
           onGround = false;
         }
@@ -524,8 +536,16 @@
         obstacles = obstacles.filter(function (o) { return o.x + o.w > dist - 200; });
 
         var prevBottom = y + SIZE;
-        vy += GRAVITY * dt;
-        y += vy * dt;
+        if (ship) {
+          // hold to fly up, release to sink; floor and ceiling are safe to touch
+          vy += (jumpHeld ? -SHIP_ACC : SHIP_ACC) * dt;
+          vy = Math.max(-SHIP_MAX, Math.min(SHIP_MAX, vy));
+          y += vy * dt;
+          if (y < CEIL) { y = CEIL; vy = 0; }
+        } else {
+          vy += GRAVITY * dt;
+          y += vy * dt;
+        }
         onGround = false;
 
         if (y + SIZE >= GROUND) {
@@ -537,6 +557,14 @@
         var cl = dist, cr = dist + SIZE; // cube in world coordinates (x offset by dist)
         for (var i = 0; i < obstacles.length; i++) {
           var o = obstacles[i];
+          if (o.type === 'portal') {
+            if (!o.used && cl >= o.x) {
+              o.used = true;
+              ship = o.kind === 'ship';
+              vy = 0;
+            }
+            continue;
+          }
           if (cr <= o.x + 4 || cl >= o.x + o.w - 4) continue;
           if (o.type === 'spike') {
             // forgiving hitbox: smaller than the drawn triangle
@@ -544,6 +572,10 @@
               die();
               return;
             }
+          } else if (o.type === 'fpillar') {
+            if (y + SIZE > GROUND - o.h + 4) { die(); return; }
+          } else if (o.type === 'cpillar') {
+            if (y < CEIL + o.h - 4) { die(); return; }
           } else if (o.type === 'tower') {
             // solid block with a spike on top: touching either one is deadly
             if (y + SIZE > GROUND - SIZE * 2 + 12) {
@@ -563,8 +595,10 @@
           }
         }
 
-        if (!onGround) rot += 5.2 * dt * 2; else rot = Math.round(rot / (Math.PI / 2)) * (Math.PI / 2);
-        if (onGround && jumpHeld) jump();
+        if (ship) rot = Math.atan2(vy, speedAt(dist)) * 0.8;
+        else if (!onGround) rot += 5.2 * dt * 2;
+        else rot = Math.round(rot / (Math.PI / 2)) * (Math.PI / 2);
+        if (onGround && jumpHeld && !ship) jump();
       }
 
       function drawSpike(sx, w, base) {
@@ -610,11 +644,36 @@
           ctx.stroke();
         }
 
+        if (ship) {
+          ctx.fillStyle = '#0d0d2e';
+          ctx.fillRect(0, 0, W, CEIL);
+          ctx.strokeStyle = '#00e5ff';
+          ctx.lineWidth = 3;
+          ctx.beginPath();
+          ctx.moveTo(0, CEIL);
+          ctx.lineTo(W, CEIL);
+          ctx.stroke();
+        }
+
         // obstacles (world -> screen: screen x = world x - dist + CUBE_X)
         obstacles.forEach(function (o) {
           var sx = o.x - dist + CUBE_X;
           if (sx > W || sx + o.w < 0) return;
-          if (o.type === 'spike') {
+          if (o.type === 'portal') {
+            ctx.strokeStyle = o.kind === 'ship' ? '#ff4fd8' : '#ff9d00';
+            ctx.lineWidth = 6;
+            ctx.beginPath();
+            ctx.ellipse(sx + 10, (CEIL + GROUND) / 2, 14, 100, 0, 0, Math.PI * 2);
+            ctx.stroke();
+          } else if (o.type === 'fpillar' || o.type === 'cpillar') {
+            ctx.fillStyle = '#222';
+            ctx.strokeStyle = '#00e5ff';
+            ctx.lineWidth = 3;
+            var py = o.type === 'fpillar' ? GROUND - o.h : 0;
+            var ph = o.type === 'fpillar' ? o.h : CEIL + o.h;
+            ctx.fillRect(sx, py, o.w, ph);
+            ctx.strokeRect(sx, py, o.w, ph);
+          } else if (o.type === 'spike') {
             drawSpike(sx, o.w, GROUND);
           } else if (o.type === 'tower') {
             ctx.fillStyle = '#222';
@@ -636,15 +695,36 @@
         ctx.save();
         ctx.translate(CUBE_X + SIZE / 2, y + SIZE / 2);
         ctx.rotate(rot);
-        ctx.fillStyle = '#ffe600';
-        ctx.fillRect(-SIZE / 2, -SIZE / 2, SIZE, SIZE);
         ctx.strokeStyle = '#000';
         ctx.lineWidth = 3;
-        ctx.strokeRect(-SIZE / 2, -SIZE / 2, SIZE, SIZE);
-        ctx.fillStyle = '#000';
-        ctx.fillRect(-10, -8, 6, 6);
-        ctx.fillRect(4, -8, 6, 6);
-        ctx.fillRect(-10, 6, 20, 4);
+        if (ship) {
+          // plane body with a small cube in the cockpit
+          ctx.fillStyle = '#ff4fd8';
+          ctx.beginPath();
+          ctx.moveTo(-26, 4);
+          ctx.lineTo(-18, -2);
+          ctx.lineTo(26, 0);
+          ctx.lineTo(30, 6);
+          ctx.lineTo(18, 14);
+          ctx.lineTo(-22, 14);
+          ctx.closePath();
+          ctx.fill();
+          ctx.stroke();
+          ctx.fillStyle = '#ffe600';
+          ctx.fillRect(-9, -16, 22, 22);
+          ctx.strokeRect(-9, -16, 22, 22);
+          ctx.fillStyle = '#000';
+          ctx.fillRect(-5, -11, 4, 4);
+          ctx.fillRect(4, -11, 4, 4);
+        } else {
+          ctx.fillStyle = '#ffe600';
+          ctx.fillRect(-SIZE / 2, -SIZE / 2, SIZE, SIZE);
+          ctx.strokeRect(-SIZE / 2, -SIZE / 2, SIZE, SIZE);
+          ctx.fillStyle = '#000';
+          ctx.fillRect(-10, -8, 6, 6);
+          ctx.fillRect(4, -8, 6, 6);
+          ctx.fillRect(-10, 6, 20, 4);
+        }
         ctx.restore();
 
         // HUD
