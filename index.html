@@ -1,10 +1,22 @@
-G<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>MATVEI SAB</title>
   <style>
+    /* wormup */
+    :root {
+      --bg: #1a0033;
+      --bg2: #2a004f;
+      --neon: #b026ff;
+      --neon2: #d65cff;
+      --text: #f3e6ff;
+      --glow: 0 0 8px #b026ff, 0 0 18px #b026ff;
+    }
+    h1, h2 { text-shadow: var(--glow); }
+    button, section { box-shadow: 0 0 10px var(--neon); }
+    /* /wormup */
     body {
       margin: 0;
       min-height: 100vh;
@@ -12,11 +24,11 @@ G<!DOCTYPE html>
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      background-color: green;
-      color: white;
+      background-color: var(--bg);
+      color: var(--text);
       font-family: Arial, sans-serif;
       text-align: center;
-      padding: 16px;
+      padding: 136px 16px 24px;
       box-sizing: border-box;
     }
     #fireworks {
@@ -36,22 +48,22 @@ G<!DOCTYPE html>
     }
     h1 {
       font-size: 4rem;
-      margin: 0 0 16px;
+      margin: 0 0 24px;
     }
     p {
       font-size: 1.5rem;
-      margin: 0 0 12px;
+      margin: 0 0 24px;
     }
     #boomBtn {
       font-size: 3.2rem;
       line-height: 1;
-      margin: 24px 0 16px;
+      margin: 0 0 24px;
       padding: 8px;
       width: 80px;
       height: 80px;
       border-radius: 50%;
-      border: 3px solid white;
-      background: white;
+      border: 3px solid var(--neon2);
+      background: var(--bg2);
       cursor: pointer;
       transition: transform 0.2s;
     }
@@ -67,14 +79,15 @@ G<!DOCTYPE html>
       min-height: 1.5em;
     }
     footer {
-      margin-top: 32px;
+      margin-top: 24px;
       font-size: 1.1rem;
     }
     section {
       margin-top: 24px;
       padding: 16px 32px;
       max-width: 600px;
-      background-color: rgba(0, 0, 0, 0.2);
+      background-color: rgba(42, 0, 79, 0.7);
+      border: 2px solid var(--neon);
       border-radius: 8px;
     }
     section h2 {
@@ -100,21 +113,21 @@ G<!DOCTYPE html>
       font-size: 0.85rem;
       font-weight: bold;
       padding: 8px 13px;
-      border: 2px solid white;
+      border: 2px solid var(--neon2);
       border-radius: 8px;
-      background: #111;
-      color: #ffe600;
+      background: var(--bg);
+      color: var(--neon2);
       cursor: pointer;
     }
     #gdBtn:hover {
-      background: #222;
+      background: var(--bg2);
     }
     #gdOverlay {
       display: none;
       position: fixed;
       inset: 0;
       z-index: 10;
-      background: #0a0a2a;
+      background: var(--bg);
       flex-direction: column;
       align-items: center;
       justify-content: center;
@@ -126,7 +139,7 @@ G<!DOCTYPE html>
       width: min(96vw, 960px);
       max-height: 80vh;
       aspect-ratio: 2 / 1;
-      border: 3px solid white;
+      border: 3px solid var(--neon2);
       border-radius: 8px;
       touch-action: none;
     }
@@ -136,10 +149,10 @@ G<!DOCTYPE html>
       right: 16px;
       font-size: 0.85rem;
       padding: 8px 13px;
-      border: 2px solid white;
+      border: 2px solid var(--neon2);
       border-radius: 8px;
-      background: #c00;
-      color: white;
+      background: var(--neon);
+      color: var(--text);
       cursor: pointer;
     }
     #gdMode {
@@ -149,10 +162,10 @@ G<!DOCTYPE html>
       font-size: 0.85rem;
       font-weight: bold;
       padding: 8px 13px;
-      border: 2px solid white;
+      border: 2px solid var(--neon2);
       border-radius: 8px;
-      background: #111;
-      color: #ffe600;
+      background: var(--bg);
+      color: var(--neon2);
       cursor: pointer;
     }
     #gdHelp {
@@ -161,20 +174,20 @@ G<!DOCTYPE html>
     }
     #tankBtn {
       position: fixed;
-      top: 62px;
+      top: 68px;
       right: 16px;
       z-index: 2;
       font-size: 1.25rem;
       font-weight: bold;
       padding: 12px 20px;
-      border: 2px solid white;
+      border: 2px solid var(--neon2);
       border-radius: 8px;
-      background: #111;
-      color: #ffe600;
+      background: var(--bg);
+      color: var(--neon2);
       cursor: pointer;
     }
     #tankBtn:hover {
-      background: #222;
+      background: var(--bg2);
     }
     #colorBtn {
       position: fixed;
@@ -184,21 +197,21 @@ G<!DOCTYPE html>
       font-size: 1rem;
       font-weight: bold;
       padding: 9px 16px;
-      border: 2px solid white;
+      border: 2px solid var(--neon2);
       border-radius: 8px;
-      background: #111;
-      color: #ffe600;
+      background: var(--bg);
+      color: var(--neon2);
       cursor: pointer;
     }
     #colorBtn:hover {
-      background: #222;
+      background: var(--bg2);
     }
     #tkOverlay {
       display: none;
       position: fixed;
       inset: 0;
       z-index: 10;
-      background: #1b2a14;
+      background: var(--bg);
       flex-direction: column;
       align-items: center;
       justify-content: center;
@@ -210,7 +223,7 @@ G<!DOCTYPE html>
       width: min(96vw, 960px);
       max-height: 80vh;
       aspect-ratio: 2 / 1;
-      border: 3px solid white;
+      border: 3px solid var(--neon2);
       border-radius: 8px;
       touch-action: none;
       cursor: crosshair;
@@ -221,10 +234,10 @@ G<!DOCTYPE html>
       right: 16px;
       font-size: 0.85rem;
       padding: 8px 13px;
-      border: 2px solid white;
+      border: 2px solid var(--neon2);
       border-radius: 8px;
-      background: #c00;
-      color: white;
+      background: var(--neon);
+      color: var(--text);
       cursor: pointer;
     }
     #tkHelp {
@@ -233,7 +246,7 @@ G<!DOCTYPE html>
     }
     /* party-mode */
     body {
-      background-image: linear-gradient(135deg, #ff4fd8, #ff9d00, #ffe600, #00e5ff, #8e44ad, #ff4fd8) !important;
+      background-image: linear-gradient(135deg, #1a0033, #4b0082, #b026ff, #2a004f, #7a2cff, #1a0033) !important;
       background-size: 400% 400% !important;
       animation: partyShift 20s ease infinite;
     }
@@ -262,7 +275,7 @@ G<!DOCTYPE html>
     }
     #partyBanner {
       position: fixed;
-      top: 16px;
+      bottom: 16px;
       left: 50%;
       transform: translateX(-50%);
       z-index: 3;
@@ -271,7 +284,8 @@ G<!DOCTYPE html>
       gap: 10px;
       padding: 8px 14px;
       border-radius: 8px;
-      background: rgba(0, 0, 0, 0.55);
+      background: rgba(26, 0, 51, 0.9);
+      border: 2px solid var(--neon);
       font-weight: bold;
       animation: partyFade 1.5s ease both;
     }
@@ -282,7 +296,7 @@ G<!DOCTYPE html>
     #partyClose {
       border: none;
       background: none;
-      color: white;
+      color: var(--text);
       font-size: 1rem;
       cursor: pointer;
     }
@@ -350,7 +364,7 @@ G<!DOCTYPE html>
   <script>
     // ---------- Background colour button ----------
     (function () {
-      var colors = ['green', '#1e66d0', '#c0392b', '#8e44ad', '#e67e22', '#16a085', '#2c3e50'];
+      var colors = ['#1a0033', '#2a004f', '#3d0070', '#4b0082', '#5a1a9e', '#33005c', '#220044'];
       var i = 0;
       document.getElementById('colorBtn').addEventListener('click', function () {
         i = (i + 1) % colors.length;
@@ -404,7 +418,7 @@ G<!DOCTYPE html>
           x: Math.random() * canvas.width,
           y: canvas.height,
           ty: canvas.height * (0.1 + Math.random() * 0.4),
-          hue: Math.random() * 360
+          hue: 260 + Math.random() * 40
         });
       }
 
@@ -417,7 +431,7 @@ G<!DOCTYPE html>
             vx: Math.cos(a) * s,
             vy: Math.sin(a) * s,
             life: 1,
-            hue: r.hue + Math.random() * 40
+            hue: r.hue + Math.random() * 20
           });
         }
       }
@@ -630,7 +644,7 @@ G<!DOCTYPE html>
           vy = JUMP;
           onGround = false;
         } else if (!onGround && !ship && state === 'playing') {
-          // mid-air tap: use a yellow orb if the cube is touching one
+          // mid-air tap: use a glowing orb if the cube is touching one
           for (var k = 0; k < obstacles.length; k++) {
             var ob = obstacles[k];
             if (ob.type !== 'orb' || ob.used) continue;
@@ -752,8 +766,8 @@ G<!DOCTYPE html>
 
       function drawSpike(sx, w, base) {
         var n = Math.round(w / SIZE);
-        ctx.fillStyle = '#ff3355';
-        ctx.strokeStyle = '#fff';
+        ctx.fillStyle = '#b026ff';
+        ctx.strokeStyle = '#f3e6ff';
         ctx.lineWidth = 2;
         for (var i = 0; i < n; i++) {
           var x = sx + i * SIZE;
@@ -769,22 +783,22 @@ G<!DOCTYPE html>
 
       function draw() {
         var g = ctx.createLinearGradient(0, 0, 0, H);
-        g.addColorStop(0, '#1a1a6e');
-        g.addColorStop(1, '#4a1a8e');
+        g.addColorStop(0, '#2a004f');
+        g.addColorStop(1, '#5a1a9e');
         ctx.fillStyle = g;
         ctx.fillRect(0, 0, W, H);
 
         // ground
-        ctx.fillStyle = '#0d0d2e';
+        ctx.fillStyle = '#12002a';
         ctx.fillRect(0, GROUND, W, H - GROUND);
-        ctx.strokeStyle = '#00e5ff';
+        ctx.strokeStyle = '#d65cff';
         ctx.lineWidth = 3;
         ctx.beginPath();
         ctx.moveTo(0, GROUND);
         ctx.lineTo(W, GROUND);
         ctx.stroke();
         ctx.lineWidth = 1;
-        ctx.strokeStyle = 'rgba(0,229,255,0.3)';
+        ctx.strokeStyle = 'rgba(214,92,255,0.3)';
         var off = dist % 40;
         for (var gx = -off; gx < W; gx += 40) {
           ctx.beginPath();
@@ -794,9 +808,9 @@ G<!DOCTYPE html>
         }
 
         if (ship) {
-          ctx.fillStyle = '#0d0d2e';
+          ctx.fillStyle = '#12002a';
           ctx.fillRect(0, 0, W, CEIL);
-          ctx.strokeStyle = '#00e5ff';
+          ctx.strokeStyle = '#d65cff';
           ctx.lineWidth = 3;
           ctx.beginPath();
           ctx.moveTo(0, CEIL);
@@ -809,8 +823,8 @@ G<!DOCTYPE html>
           var sx = o.x - dist + CUBE_X;
           if (sx > W || sx + o.w < 0) return;
           if (o.type === 'orb') {
-            ctx.fillStyle = o.used ? 'rgba(255,230,0,0.25)' : 'rgba(255,230,0,0.6)';
-            ctx.strokeStyle = '#ffe600';
+            ctx.fillStyle = o.used ? 'rgba(214,92,255,0.25)' : 'rgba(214,92,255,0.6)';
+            ctx.strokeStyle = '#d65cff';
             ctx.lineWidth = 4;
             ctx.beginPath();
             ctx.arc(sx + o.w / 2, ORB_Y, 14, 0, Math.PI * 2);
@@ -820,14 +834,14 @@ G<!DOCTYPE html>
             ctx.arc(sx + o.w / 2, ORB_Y, 22, 0, Math.PI * 2);
             ctx.stroke();
           } else if (o.type === 'portal') {
-            ctx.strokeStyle = o.kind === 'ship' ? '#ff4fd8' : (o.kind === 'wave' ? '#4dd2ff' : (o.kind === 'ufo' ? '#7dff4f' : (o.kind === 'jet' ? '#ff3b3b' : '#ff9d00')));
+            ctx.strokeStyle = o.kind === 'ship' ? '#c77dff' : (o.kind === 'wave' ? '#8a5cff' : (o.kind === 'ufo' ? '#9d4dff' : (o.kind === 'jet' ? '#7a2cff' : '#e9b3ff')));
             ctx.lineWidth = 6;
             ctx.beginPath();
             ctx.ellipse(sx + 10, (CEIL + GROUND) / 2, 14, 100, 0, 0, Math.PI * 2);
             ctx.stroke();
           } else if (o.type === 'fpillar' || o.type === 'cpillar') {
-            ctx.fillStyle = '#222';
-            ctx.strokeStyle = '#00e5ff';
+            ctx.fillStyle = '#12002a';
+            ctx.strokeStyle = '#d65cff';
             ctx.lineWidth = 3;
             var py = o.type === 'fpillar' ? GROUND - o.h : 0;
             var ph = o.type === 'fpillar' ? o.h : CEIL + o.h;
@@ -836,15 +850,15 @@ G<!DOCTYPE html>
           } else if (o.type === 'spike') {
             drawSpike(sx, o.w, GROUND);
           } else if (o.type === 'tower') {
-            ctx.fillStyle = '#222';
-            ctx.strokeStyle = '#00e5ff';
+            ctx.fillStyle = '#12002a';
+            ctx.strokeStyle = '#d65cff';
             ctx.lineWidth = 3;
             ctx.fillRect(sx, GROUND - SIZE, o.w, SIZE);
             ctx.strokeRect(sx, GROUND - SIZE, o.w, SIZE);
             drawSpike(sx, o.w, GROUND - SIZE);
           } else {
-            ctx.fillStyle = '#222';
-            ctx.strokeStyle = '#00e5ff';
+            ctx.fillStyle = '#12002a';
+            ctx.strokeStyle = '#d65cff';
             ctx.lineWidth = 3;
             ctx.fillRect(sx, GROUND - SIZE, o.w, SIZE);
             ctx.strokeRect(sx, GROUND - SIZE, o.w, SIZE);
@@ -857,7 +871,7 @@ G<!DOCTYPE html>
           ctx.lineCap = 'round';
           for (var ti = 1; ti < trail.length; ti++) {
             ctx.globalAlpha = Math.max(0, (trail[ti].d - (dist - 160)) / 160);
-            ctx.strokeStyle = '#4dd2ff';
+            ctx.strokeStyle = '#c77dff';
             ctx.beginPath();
             ctx.moveTo(trail[ti - 1].d - dist + CUBE_X + SIZE / 2, trail[ti - 1].y);
             ctx.lineTo(trail[ti].d - dist + CUBE_X + SIZE / 2, trail[ti].y);
@@ -871,12 +885,12 @@ G<!DOCTYPE html>
         ctx.save();
         ctx.translate(CUBE_X + SIZE / 2, y + SIZE / 2);
         ctx.rotate(rot);
-        ctx.strokeStyle = '#000';
+        ctx.strokeStyle = '#12002a';
         ctx.lineWidth = 3;
         if (jet) {
           // jetpack on the cube's back, with a flame while thrusting
           if (jumpHeld) {
-            ctx.fillStyle = '#ff9d00';
+            ctx.fillStyle = '#e9b3ff';
             ctx.beginPath();
             ctx.moveTo(-26, 4);
             ctx.lineTo(-26 - 14 - Math.random() * 12, 12);
@@ -884,35 +898,35 @@ G<!DOCTYPE html>
             ctx.closePath();
             ctx.fill();
           }
-          ctx.fillStyle = '#ff3b3b';
+          ctx.fillStyle = '#7a2cff';
           ctx.fillRect(-28, -6, 12, 28);
           ctx.strokeRect(-28, -6, 12, 28);
-          ctx.fillStyle = '#ffe600';
+          ctx.fillStyle = '#d65cff';
           ctx.fillRect(-SIZE / 2 + 2, -SIZE / 2, SIZE - 4, SIZE);
           ctx.strokeRect(-SIZE / 2 + 2, -SIZE / 2, SIZE - 4, SIZE);
-          ctx.fillStyle = '#000';
+          ctx.fillStyle = '#12002a';
           ctx.fillRect(-6, -8, 6, 6);
           ctx.fillRect(6, -8, 6, 6);
           ctx.fillRect(-4, 6, 16, 4);
         } else if (ufo) {
           // ufo: a saucer with the cube in the dome
-          ctx.fillStyle = '#ffe600';
+          ctx.fillStyle = '#d65cff';
           ctx.beginPath();
           ctx.arc(0, 2, 13, Math.PI, 0);
           ctx.closePath();
           ctx.fill();
           ctx.stroke();
-          ctx.fillStyle = '#7dff4f';
+          ctx.fillStyle = '#9d4dff';
           ctx.beginPath();
           ctx.ellipse(0, 6, 28, 10, 0, 0, Math.PI * 2);
           ctx.fill();
           ctx.stroke();
-          ctx.fillStyle = '#000';
+          ctx.fillStyle = '#12002a';
           ctx.fillRect(-6, -8, 4, 4);
           ctx.fillRect(3, -8, 4, 4);
         } else if (wave) {
           // wave: a sharp arrow
-          ctx.fillStyle = '#4dd2ff';
+          ctx.fillStyle = '#c77dff';
           ctx.beginPath();
           ctx.moveTo(-14, -14);
           ctx.lineTo(18, 0);
@@ -923,7 +937,7 @@ G<!DOCTYPE html>
           ctx.stroke();
         } else if (ship) {
           // plane body with a small cube in the cockpit
-          ctx.fillStyle = '#ff4fd8';
+          ctx.fillStyle = '#c77dff';
           ctx.beginPath();
           ctx.moveTo(-26, 4);
           ctx.lineTo(-18, -2);
@@ -934,17 +948,17 @@ G<!DOCTYPE html>
           ctx.closePath();
           ctx.fill();
           ctx.stroke();
-          ctx.fillStyle = '#ffe600';
+          ctx.fillStyle = '#d65cff';
           ctx.fillRect(-9, -16, 22, 22);
           ctx.strokeRect(-9, -16, 22, 22);
-          ctx.fillStyle = '#000';
+          ctx.fillStyle = '#12002a';
           ctx.fillRect(-5, -11, 4, 4);
           ctx.fillRect(4, -11, 4, 4);
         } else {
-          ctx.fillStyle = '#ffe600';
+          ctx.fillStyle = '#d65cff';
           ctx.fillRect(-SIZE / 2, -SIZE / 2, SIZE, SIZE);
           ctx.strokeRect(-SIZE / 2, -SIZE / 2, SIZE, SIZE);
-          ctx.fillStyle = '#000';
+          ctx.fillStyle = '#12002a';
           ctx.fillRect(-10, -8, 6, 6);
           ctx.fillRect(4, -8, 6, 6);
           ctx.fillRect(-10, 6, 20, 4);
@@ -952,7 +966,7 @@ G<!DOCTYPE html>
         ctx.restore();
 
         // HUD
-        ctx.fillStyle = '#fff';
+        ctx.fillStyle = '#f3e6ff';
         ctx.font = 'bold 22px Arial';
         ctx.textAlign = 'left';
         if (mode === 'fingerdash') {
@@ -970,9 +984,9 @@ G<!DOCTYPE html>
           ctx.font = '22px Arial';
           ctx.fillText('Press Space or click to start', W / 2, 180);
         } else if (state === 'dead') {
-          ctx.fillStyle = 'rgba(0,0,0,0.5)';
+          ctx.fillStyle = 'rgba(18,0,42,0.6)';
           ctx.fillRect(0, 0, W, H);
-          ctx.fillStyle = '#fff';
+          ctx.fillStyle = '#f3e6ff';
           ctx.font = 'bold 40px Arial';
           ctx.fillText('Game Over', W / 2, 150);
           ctx.font = '22px Arial';
@@ -983,12 +997,12 @@ G<!DOCTYPE html>
           }
           ctx.fillText('Press Space or click to try again', W / 2, 225);
         } else if (state === 'won') {
-          ctx.fillStyle = 'rgba(0,0,0,0.5)';
+          ctx.fillStyle = 'rgba(18,0,42,0.6)';
           ctx.fillRect(0, 0, W, H);
-          ctx.fillStyle = '#ffe600';
+          ctx.fillStyle = '#d65cff';
           ctx.font = 'bold 40px Arial';
           ctx.fillText('Level Complete!', W / 2, 150);
-          ctx.fillStyle = '#fff';
+          ctx.fillStyle = '#f3e6ff';
           ctx.font = '22px Arial';
           ctx.fillText('Press Space or click to play again', W / 2, 200);
         }
@@ -1178,7 +1192,7 @@ G<!DOCTYPE html>
             for (var i = 0; i < enemies.length; i++) {
               var e = enemies[i];
               if ((b.x - e.x) * (b.x - e.x) + (b.y - e.y) * (b.y - e.y) < R * R) {
-                boom(e.x, e.y, '#ff9d00');
+                boom(e.x, e.y, '#e9b3ff');
                 enemies.splice(i, 1);
                 score++;
                 return false;
@@ -1186,7 +1200,7 @@ G<!DOCTYPE html>
             }
           } else if (player.inv <= 0 &&
                      (b.x - player.x) * (b.x - player.x) + (b.y - player.y) * (b.y - player.y) < R * R) {
-            boom(player.x, player.y, '#4dd2ff');
+            boom(player.x, player.y, '#c77dff');
             player.lives--;
             player.inv = 1.2;
             if (player.lives <= 0) {
@@ -1208,7 +1222,7 @@ G<!DOCTYPE html>
         ctx.save();
         ctx.translate(t.x, t.y);
         ctx.fillStyle = body;
-        ctx.strokeStyle = '#000';
+        ctx.strokeStyle = '#12002a';
         ctx.lineWidth = 2;
         ctx.fillRect(-R, -R, R * 2, R * 2);
         ctx.strokeRect(-R, -R, R * 2, R * 2);
@@ -1224,24 +1238,24 @@ G<!DOCTYPE html>
       }
 
       function draw() {
-        ctx.fillStyle = '#4b6b2f';
+        ctx.fillStyle = '#2a004f';
         ctx.fillRect(0, 0, W, H);
-        ctx.strokeStyle = 'rgba(0,0,0,0.08)';
+        ctx.strokeStyle = 'rgba(214,92,255,0.08)';
         ctx.lineWidth = 1;
         for (var gx = 0; gx < W; gx += 40) { ctx.beginPath(); ctx.moveTo(gx, 0); ctx.lineTo(gx, H); ctx.stroke(); }
         for (var gy = 0; gy < H; gy += 40) { ctx.beginPath(); ctx.moveTo(0, gy); ctx.lineTo(W, gy); ctx.stroke(); }
 
-        ctx.fillStyle = '#6d6d6d';
-        ctx.strokeStyle = '#222';
+        ctx.fillStyle = '#5a2a8a';
+        ctx.strokeStyle = '#12002a';
         ctx.lineWidth = 3;
         walls.forEach(function (w) { ctx.fillRect(w.x, w.y, w.w, w.h); ctx.strokeRect(w.x, w.y, w.w, w.h); });
 
-        enemies.forEach(function (e) { drawTank(e, '#b33a3a', '#7a1f1f'); });
+        enemies.forEach(function (e) { drawTank(e, '#e07bff', '#a020c8'); });
         if (state !== 'dead' && (player.inv <= 0 || Math.floor(player.inv * 10) % 2 === 0)) {
-          drawTank(player, '#3a7fb3', '#1f4d7a');
+          drawTank(player, '#7a2cff', '#4b1a9e');
         }
 
-        ctx.fillStyle = '#ffe600';
+        ctx.fillStyle = '#d65cff';
         bullets.forEach(function (b) { ctx.beginPath(); ctx.arc(b.x, b.y, 4, 0, Math.PI * 2); ctx.fill(); });
         parts.forEach(function (p) {
           ctx.globalAlpha = p.life;
@@ -1251,7 +1265,7 @@ G<!DOCTYPE html>
         ctx.globalAlpha = 1;
 
         // crosshair
-        ctx.strokeStyle = '#fff';
+        ctx.strokeStyle = '#f3e6ff';
         ctx.lineWidth = 1.5;
         ctx.beginPath();
         ctx.arc(mouse.x, mouse.y, 8, 0, Math.PI * 2);
@@ -1259,7 +1273,7 @@ G<!DOCTYPE html>
         ctx.moveTo(mouse.x, mouse.y - 12); ctx.lineTo(mouse.x, mouse.y + 12);
         ctx.stroke();
 
-        ctx.fillStyle = '#fff';
+        ctx.fillStyle = '#f3e6ff';
         ctx.font = 'bold 22px Arial';
         ctx.textAlign = 'left';
         ctx.fillText('Score: ' + score + '   Lives: ' + '❤'.repeat(Math.max(0, player.lives)), 16, 32);
@@ -1268,9 +1282,9 @@ G<!DOCTYPE html>
 
         ctx.textAlign = 'center';
         if (state === 'ready' || state === 'dead') {
-          ctx.fillStyle = 'rgba(0,0,0,0.55)';
+          ctx.fillStyle = 'rgba(18,0,42,0.7)';
           ctx.fillRect(0, 0, W, H);
-          ctx.fillStyle = '#fff';
+          ctx.fillStyle = '#f3e6ff';
           ctx.font = 'bold 38px Arial';
           ctx.fillText(state === 'ready' ? 'Tanks' : 'Game Over', W / 2, 150);
           ctx.font = '22px Arial';
