@@ -470,6 +470,7 @@
     <div id="tkHelp">Move: WASD / arrows &nbsp; Aim: mouse &nbsp; Shoot: click / Space</div>
   </div>
 
+
   <!-- scary31october -->
   <div id="scaryLayer">
     <div id="scaryGap"></div>
@@ -1463,20 +1464,15 @@
       reset();
     })();
   </script>
-  <!-- scary31october -->
+<!-- scary31october -->
   <script>
     /* scary31october */
+    // pressing "Change colour" sets the monster off
     (function () {
       var layer = document.getElementById('scaryLayer');
       var content = document.querySelector('.content');
       var ac = null;
-      var armed = false;
       var timer = 0;
-
-      function gamesOpen() {
-        return document.getElementById('gdOverlay').classList.contains('open') ||
-               document.getElementById('tkOverlay').classList.contains('open');
-      }
 
       function scream() {
         try {
@@ -1521,22 +1517,16 @@
       }
 
       function show() {
-        if (gamesOpen()) { setTimeout(show, 500); return; }
+        if (layer.classList.contains('on')) return;
+        // the AudioContext is made inside the click so the browser allows sound
+        try { ac = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { ac = null; }
         layer.classList.add('on');
         content.classList.add('scaryShake');
         scream();
         timer = setTimeout(hide, 4000);
       }
 
-      function arm() {
-        if (armed) return;
-        armed = true;
-        try { ac = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { ac = null; }
-        setTimeout(show, 3000);
-      }
-
-      document.addEventListener('pointerdown', arm);
-      document.addEventListener('keydown', arm);
+      document.getElementById('colorBtn').addEventListener('click', show);
       document.getElementById('scaryClose').addEventListener('click', hide);
     })();
     /* /scary31october */
