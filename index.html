@@ -330,6 +330,11 @@
       <h3>Get in touch</h3>
       <p>Thanks for visiting my site. Feel free to say hello!</p>
     </section>
+    <section>
+      <h2>New Section</h2>
+      <h3>Subheading</h3>
+      <p>Type your text here.</p>
+    </section>
     <footer>Made by &lt;MATVEI&gt;<br>Share the link with friends</footer>
   </div>
 
@@ -536,38 +541,37 @@
 
       // fixed hand-made level: pattern codes laid out one after another
       function buildLevel() {
-        var seq = ['s1', 's2', 's1', 'b2', 'bs', 's3', 'sp', 's2', 'bs',
-                   'o6', 's3', 'b3', 'sp', 't', 's2', 'bs', 'o6', 's3',
-                   'P', 'f80', 'c100', 'f120', 'c80', 'f100', 'c120', 'f80', 'c100', 'f100', 'C',
-                   's1', 'b2', 't', 'sp', 's3', 'b3', 'bs', 's1', 't', 's3', 'sp', 'bs', 's3',
-                   'o6', 's2', 't', 'o13', 's1',
-                   'W', 'f90', 'c110', 'f130', 'c90', 'f110', 'c130', 'f90', 'c110', 'f120', 'c100', 'f100', 'C',
-                   's1', 'bs', 'sp', 's3', 'o6',
-                   'U', 'f100', 'c100', 'f60', 'c120', 'f120', 'c80', 'f100', 'c100', 'f80', 'C',
-                   's1', 's2', 't', 'b3', 's3', 'bs', 'o6', 'sp', 's3', 'b2', 's1',
-                   'J', 'f90', 'c100', 'f110', 'c80', 'f120', 'c100', 'f80', 'c120', 'f100', 'c90', 'f110', 'C',
-                   'bs', 'sp', 's3', 'o13', 's1', 'o6', 's2', 't', 'b3', 's3', 'bs', 'o6', 'sp', 's1', 's2', 't', 's3', 'bs', 'o13', 's3'];
+        var seq = ['s1', 's2', 'sp', 's1', 'b2', 's2', 'bs', 's3', 's3', 'sp', 's4', 'sp', 'bs', 'o6',
+                   's4', 's5', 'b3', 'sp', 'sp', 't', 's2', 's2', 'bs', 's3', 'o13', 's3', 'sp', 'P',
+                   'f120', 'c140', 'f160', 'c120', 'f140', 'c160', 'f120', 'c140', 'f140', 'C', 's1', 'bs', 's4', 'sp',
+                   't', 'sp', 's4', 'sp', 's2', 's5', 'b3', 's3', 'bs', 's1', 'sp', 't', 's3', 's4',
+                   'sp', 'bs', 'sp', 's5', 'o6', 's2', 's2', 't', 's3', 's4', 'o13', 'sp', 's1', 'W',
+                   'f130', 'c150', 'f170', 'c130', 'f150', 'c170', 'f130', 'c150', 'f160', 'c140', 'f140', 'C', 's1', 's4',
+                   'bs', 'sp', 'sp', 's3', 'o13', 's2', 'U', 'f140', 'c140', 'f100', 'c160', 'f160', 'c120', 'f140',
+                   'c140', 'f120', 'C', 's1', 's2', 's3', 't', 'b3', 'sp', 's5', 'bs', 's4', 'o6', 'sp',
+                   'sp', 's3', 'b2', 's2', 's1', 'J', 'f130', 'c140', 'f150', 'c120', 'f160', 'c140', 'f120', 'c160',
+                   'f140', 'c130', 'f150', 'C', 'bs', 's3', 'sp', 's5', 'sp', 'o13', 's1', 's4', 'o13', 's4',
+                   'sp', 't', 's2', 's2', 'b3', 's3', 's3', 'bs', 'o6', 'sp', 'sp', 's1', 's4', 's4',
+                   't', 'sp', 's5', 'bs', 's2', 'o13', 's3', 's3'];
         var x = 800;
         seq.forEach(function (c) {
           var end;
-          if (c === 's1') { obstacles.push({ type: 'spike', x: x, w: SIZE }); end = x + SIZE; }
-          else if (c === 's2') { obstacles.push({ type: 'spike', x: x, w: SIZE * 2 }); end = x + SIZE * 2; }
-          else if (c === 's3') { obstacles.push({ type: 'spike', x: x, w: SIZE * 3 }); end = x + SIZE * 3; }
+          if (/^s\d$/.test(c)) { obstacles.push({ type: 'spike', x: x, w: SIZE * +c.slice(1) }); end = x + SIZE * +c.slice(1); }
           else if (c === 'b2') { obstacles.push({ type: 'block', x: x, w: SIZE * 2 }); end = x + SIZE * 2; }
           else if (c === 'bs') {
             obstacles.push({ type: 'block', x: x, w: SIZE });
-            obstacles.push({ type: 'spike', x: x + SIZE + 80, w: SIZE });
-            end = x + SIZE * 2 + 80;
+            obstacles.push({ type: 'spike', x: x + SIZE + 60, w: SIZE });
+            end = x + SIZE * 2 + 60;
           } else if (c === 'b3') {
             // wide block with a spike right after it: land, run along, jump again
             obstacles.push({ type: 'block', x: x, w: SIZE * 3 });
-            obstacles.push({ type: 'spike', x: x + SIZE * 3 + 70, w: SIZE });
-            end = x + SIZE * 4 + 70;
+            obstacles.push({ type: 'spike', x: x + SIZE * 3 + 50, w: SIZE });
+            end = x + SIZE * 4 + 50;
           } else if (c === 'sp') {
             // two single spikes with a short gap: two quick jumps
             obstacles.push({ type: 'spike', x: x, w: SIZE });
-            obstacles.push({ type: 'spike', x: x + SIZE + 110, w: SIZE });
-            end = x + SIZE * 2 + 110;
+            obstacles.push({ type: 'spike', x: x + SIZE + 80, w: SIZE });
+            end = x + SIZE * 2 + 80;
           } else if (c === 'o13') {
             // very long spike run with two orbs: chain two mid-air jumps
             obstacles.push({ type: 'spike', x: x, w: SIZE * 13 });
@@ -586,14 +590,14 @@
             obstacles.push({ type: c.charAt(0) === 'f' ? 'fpillar' : 'cpillar', x: x, w: SIZE, h: +c.slice(1) });
             end = x + SIZE;
           } else { obstacles.push({ type: 'tower', x: x, w: SIZE }); end = x + SIZE; }
-          x = end + (c === 'P' || c === 'W' || c === 'U' || c === 'J' ? 260 : (c.charAt(0) === 'f' || c.charAt(0) === 'c' ? 300 : 340));
+          x = end + (c === 'P' || c === 'W' || c === 'U' || c === 'J' ? 260 : (c.charAt(0) === 'f' || c.charAt(0) === 'c' ? 230 : 210));
         });
         levelEnd = x + 200;
       }
 
-      // the level speeds up a little as you go: 380 px/s at the start, up to 450 px/s
+      // the level speeds up as you go: 470 px/s at the start, up to 620 px/s
       function speedAt(d) {
-        return 380 + 70 * Math.min(1, d / levelEnd);
+        return 470 + 150 * Math.min(1, d / levelEnd);
       }
 
       function die() {
