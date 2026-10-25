@@ -231,16 +231,85 @@ G<!DOCTYPE html>
       margin-top: 12px;
       font-size: 1rem;
     }
+    /* party-mode */
+    body {
+      background-image: linear-gradient(135deg, #ff4fd8, #ff9d00, #ffe600, #00e5ff, #8e44ad, #ff4fd8) !important;
+      background-size: 400% 400% !important;
+      animation: partyShift 20s ease infinite;
+    }
+    @keyframes partyShift {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+    #partyLayer {
+      position: fixed;
+      inset: 0;
+      z-index: 1;
+      pointer-events: none;
+      overflow: hidden;
+    }
+    #partyLayer span {
+      position: absolute;
+      bottom: -10px;
+      font-size: 2rem;
+      animation: partyFloat 8s ease-in-out infinite;
+    }
+    @keyframes partyFloat {
+      0% { transform: translateY(0) rotate(-10deg); }
+      50% { transform: translateY(-50vh) rotate(10deg); }
+      100% { transform: translateY(0) rotate(-10deg); }
+    }
+    #partyBanner {
+      position: fixed;
+      top: 16px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 3;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 14px;
+      border-radius: 8px;
+      background: rgba(0, 0, 0, 0.55);
+      font-weight: bold;
+      animation: partyFade 1.5s ease both;
+    }
+    @keyframes partyFade {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    #partyClose {
+      border: none;
+      background: none;
+      color: white;
+      font-size: 1rem;
+      cursor: pointer;
+    }
+    /* /party-mode */
   </style>
 </head>
 <body>
   <canvas id="fireworks"></canvas>
 
+  <!-- party-mode -->
+  <div id="partyLayer">
+    <span style="left: 5%; animation-delay: 0s">🎉</span>
+    <span style="left: 20%; animation-delay: -2s">🎈</span>
+    <span style="left: 35%; animation-delay: -4s">🥳</span>
+    <span style="left: 50%; animation-delay: -1s">🎂</span>
+    <span style="left: 65%; animation-delay: -3s">✨</span>
+    <span style="left: 80%; animation-delay: -5s">🎊</span>
+    <span style="left: 92%; animation-delay: -6s">🎈</span>
+  </div>
+  <div id="partyBanner">🎉 Party time, Matvei's site is in the house! 🥳 <button id="partyClose" aria-label="dismiss">✕</button></div>
+  <!-- /party-mode -->
+
   <button id="colorBtn">🎨 Change colour</button>
   <button id="gdBtn">🎮 Geometry Dash</button>
 
   <div class="content">
-    <h1>&lt;Matvei's&gt; Site</h1>
+    <h1>🎉 &lt;Matvei's&gt; Site 🥳<!-- party-mode --> 🎂✨🎊<!-- /party-mode --></h1>
     <p><em>"Play hard, have fun, never give up!"</em></p>
     <p>My hobby is playing football.</p>
     <button id="boomBtn" aria-label="boom">⚽</button>
@@ -288,6 +357,12 @@ G<!DOCTYPE html>
         document.body.style.backgroundColor = colors[i];
       });
     })();
+
+    /* party-mode */
+    document.getElementById('partyClose').addEventListener('click', function () {
+      document.getElementById('partyBanner').style.display = 'none';
+    });
+    /* /party-mode */
 
     // ---------- Boom button ----------
     document.getElementById('boomBtn').addEventListener('click', function () {
