@@ -155,19 +155,6 @@
       color: var(--text);
       cursor: pointer;
     }
-    #gdMode {
-      position: absolute;
-      top: 16px;
-      left: 16px;
-      font-size: 0.85rem;
-      font-weight: bold;
-      padding: 8px 13px;
-      border: 2px solid var(--neon2);
-      border-radius: 8px;
-      background: var(--bg);
-      color: var(--neon2);
-      cursor: pointer;
-    }
     #gdHelp {
       margin-top: 12px;
       font-size: 1rem;
@@ -347,7 +334,6 @@
   </div>
 
   <div id="gdOverlay">
-    <button id="gdMode">Level: Endless</button>
     <button id="gdClose">✕ Close (Esc)</button>
     <canvas id="gdCanvas" width="800" height="400"></canvas>
     <div id="gdHelp">Jump: Space / ↑ / click / tap</div>
@@ -513,7 +499,9 @@
       var last = 0;
       var best = 0;
       var jumpHeld = false;
-      var mode = 'endless'; // endless | fingerdash
+      var buffer = 0; // jump pressed just before landing
+      var airJumps = 1; // extra mid-air jumps left (double jump)
+      var coyote = 0; // grace time after running off an edge
       var levelEnd = 0;
       var ship = false; // true for both plane and wave
       var wave = false;
@@ -526,7 +514,7 @@
       var SHIP_ACC = 1900;
       var SHIP_MAX = 380;
 
-      var dist, y, vy, onGround, rot, obstacles, nextSpawn;
+      var dist, y, vy, onGround, rot, obstacles;
 
       function reset() {
         dist = 0;
@@ -540,22 +528,25 @@
         jet = false;
         trail = [];
         obstacles = [];
-        nextSpawn = 700;
-        if (mode === 'fingerdash') buildLevel();
+        buffer = 0;
+        coyote = 0;
+        airJumps = 1;
+        buildLevel();
       }
 
       // fixed hand-made level: pattern codes laid out one after another
       function buildLevel() {
-        var seq = ['s1', 's2', 's1', 'b2', 'bs', 'o6', 's3', 's1', 's2', 't', 's2', 'o6', 'bs', 's3',
+        var seq = ['s1', 's2', 's1', 'b2', 'bs', 's3', 'sp', 's2', 'bs',
+                   'o6', 's3', 'b3', 'sp', 't', 's2', 'bs', 'o6', 's3',
                    'P', 'f80', 'c100', 'f120', 'c80', 'f100', 'c120', 'f80', 'c100', 'f100', 'C',
-                   's1', 'b2', 't', 's3', 's2', 'bs', 's1', 't', 's3', 's2', 'bs', 's3',
-                   'o6', 's2', 't', 's1',
+                   's1', 'b2', 't', 'sp', 's3', 'b3', 'bs', 's1', 't', 's3', 'sp', 'bs', 's3',
+                   'o6', 's2', 't', 'o13', 's1',
                    'W', 'f90', 'c110', 'f130', 'c90', 'f110', 'c130', 'f90', 'c110', 'f120', 'c100', 'f100', 'C',
-                   's1', 'bs', 's3', 'o6',
+                   's1', 'bs', 'sp', 's3', 'o6',
                    'U', 'f100', 'c100', 'f60', 'c120', 'f120', 'c80', 'f100', 'c100', 'f80', 'C',
-                   's1', 's2', 't', 's3', 'bs', 'o6', 's2', 's3', 'b2', 's1',
+                   's1', 's2', 't', 'b3', 's3', 'bs', 'o6', 'sp', 's3', 'b2', 's1',
                    'J', 'f90', 'c100', 'f110', 'c80', 'f120', 'c100', 'f80', 'c120', 'f100', 'c90', 'f110', 'C',
-                   'bs', 's3', 's1', 'o6', 's2', 't', 's3', 'b2', 'bs', 'o6', 's1', 's2', 't', 's3', 'bs', 's3'];
+                   'bs', 'sp', 's3', 'o13', 's1', 'o6', 's2', 't', 'b3', 's3', 'bs', 'o6', 'sp', 's1', 's2', 't', 's3', 'bs', 'o13', 's3'];
         var x = 800;
         seq.forEach(function (c) {
           var end;
@@ -567,6 +558,22 @@
             obstacles.push({ type: 'block', x: x, w: SIZE });
             obstacles.push({ type: 'spike', x: x + SIZE + 80, w: SIZE });
             end = x + SIZE * 2 + 80;
+          } else if (c === 'b3') {
+            // wide block with a spike right after it: land, run along, jump again
+            obstacles.push({ type: 'block', x: x, w: SIZE * 3 });
+            obstacles.push({ type: 'spike', x: x + SIZE * 3 + 70, w: SIZE });
+            end = x + SIZE * 4 + 70;
+          } else if (c === 'sp') {
+            // two single spikes with a short gap: two quick jumps
+            obstacles.push({ type: 'spike', x: x, w: SIZE });
+            obstacles.push({ type: 'spike', x: x + SIZE + 110, w: SIZE });
+            end = x + SIZE * 2 + 110;
+          } else if (c === 'o13') {
+            // very long spike run with two orbs: chain two mid-air jumps
+            obstacles.push({ type: 'spike', x: x, w: SIZE * 13 });
+            obstacles.push({ type: 'orb', x: x + 110 - 16, w: 32, used: false });
+            obstacles.push({ type: 'orb', x: x + 370 - 16, w: 32, used: false });
+            end = x + SIZE * 13;
           } else if (c === 'o6') {
             // long spike run; tap the orb in mid-air to jump a second time
             obstacles.push({ type: 'spike', x: x, w: SIZE * 6 });
@@ -582,48 +589,16 @@
           x = end + (c === 'P' || c === 'W' || c === 'U' || c === 'J' ? 260 : (c.charAt(0) === 'f' || c.charAt(0) === 'c' ? 300 : 340));
         });
         levelEnd = x + 200;
-        nextSpawn = Infinity;
       }
 
-      // the level speeds up as you go: 380 px/s at the start, up to 600 px/s
+      // the level speeds up a little as you go: 380 px/s at the start, up to 450 px/s
       function speedAt(d) {
-        if (mode === 'fingerdash') return 400;
-        return Math.min(380 + d * 0.02, 600);
-      }
-
-      function spawn() {
-        var r = Math.random();
-        var x = nextSpawn;
-        var end;
-        if (r < 0.2) {
-          obstacles.push({ type: 'spike', x: x, w: SIZE });
-          end = x + SIZE;
-        } else if (r < 0.4) {
-          obstacles.push({ type: 'spike', x: x, w: SIZE * 2 });
-          end = x + SIZE * 2;
-        } else if (r < 0.55) {
-          obstacles.push({ type: 'spike', x: x, w: SIZE * 3 });
-          end = x + SIZE * 3;
-        } else if (r < 0.65) {
-          obstacles.push({ type: 'block', x: x, w: SIZE * 2 });
-          end = x + SIZE * 2;
-        } else if (r < 0.8) {
-          // block followed closely by a spike: land on the block, then jump again
-          obstacles.push({ type: 'block', x: x, w: SIZE });
-          obstacles.push({ type: 'spike', x: x + SIZE + 80, w: SIZE });
-          end = x + SIZE * 2 + 80;
-        } else {
-          // tower: a spike sitting on top of a block, needs a high jump
-          obstacles.push({ type: 'tower', x: x, w: SIZE });
-          end = x + SIZE;
-        }
-        var s = speedAt(x);
-        nextSpawn = end + s * (0.6 + Math.random() * 0.5);
+        return 380 + 70 * Math.min(1, d / levelEnd);
       }
 
       function die() {
         state = 'dead';
-        var score = mode === 'fingerdash' ? Math.floor(dist / levelEnd * 100) : Math.floor(dist / 10);
+        var score = Math.floor(dist / levelEnd * 100);
         if (score > best) best = score;
       }
 
@@ -640,10 +615,13 @@
           // every tap gives a hop, even in mid-air
           vy = UFO_HOP;
           onGround = false;
-        } else if (onGround && !ship) {
+        } else if ((onGround || coyote > 0) && !ship) {
           vy = JUMP;
           onGround = false;
+          coyote = 0;
+          airJumps = 1;
         } else if (!onGround && !ship && state === 'playing') {
+          var usedOrb = false;
           // mid-air tap: use a glowing orb if the cube is touching one
           for (var k = 0; k < obstacles.length; k++) {
             var ob = obstacles[k];
@@ -652,22 +630,29 @@
             if (Math.abs(dist + SIZE / 2 - ox) < 40 && Math.abs(y + SIZE / 2 - oy) < 45) {
               ob.used = true;
               vy = JUMP;
+              usedOrb = true;
               break;
             }
           }
+          // no orb: remember the tap so the cube jumps the moment it lands
+          if (!usedOrb && airJumps > 0) {
+            airJumps--;
+            vy = JUMP;
+            usedOrb = true;
+          }
+          if (!usedOrb) buffer = 0.12;
         }
       }
 
       function update(dt) {
         if (state !== 'playing') return;
         dist += speedAt(dist) * dt;
-        if (mode === 'fingerdash' && dist >= levelEnd) {
+        if (dist >= levelEnd) {
           state = 'won';
           best = Math.max(best, 100);
           return;
         }
 
-        while (nextSpawn < dist + W + 200) spawn();
         obstacles = obstacles.filter(function (o) { return o.x + o.w > dist - 200; });
 
         var prevBottom = y + SIZE;
@@ -759,9 +744,12 @@
         else if (ufo) rot = vy * 0.0004;
         else if (wave) rot = vy > 0 ? Math.PI / 4 : (vy < 0 ? -Math.PI / 4 : 0);
         else if (ship) rot = Math.atan2(vy, speedAt(dist)) * 0.8;
-        else if (!onGround) rot += 5.2 * dt * 2;
-        else rot = Math.round(rot / (Math.PI / 2)) * (Math.PI / 2);
-        if (onGround && jumpHeld && !ship) jump();
+        else if (!onGround) rot += (Math.PI / 0.63) * dt; // half a turn per normal jump
+        else rot += (Math.round(rot / (Math.PI / 2)) * (Math.PI / 2) - rot) * Math.min(1, dt * 25);
+        if (onGround) { coyote = 0.08; airJumps = 1; }
+        else coyote = Math.max(0, coyote - dt);
+        buffer = Math.max(0, buffer - dt);
+        if (onGround && (jumpHeld || buffer > 0) && !ship) { buffer = 0; jump(); }
       }
 
       function drawSpike(sx, w, base) {
@@ -969,18 +957,20 @@
         ctx.fillStyle = '#f3e6ff';
         ctx.font = 'bold 22px Arial';
         ctx.textAlign = 'left';
-        if (mode === 'fingerdash') {
-          ctx.fillText(Math.min(100, Math.floor(dist / levelEnd * 100)) + '%', 16, 32);
-        } else {
-          ctx.fillText('Score: ' + Math.floor(dist / 10), 16, 32);
-        }
+        ctx.fillText(Math.min(100, Math.floor(dist / levelEnd * 100)) + '%', 16, 32);
         ctx.textAlign = 'right';
-        ctx.fillText('Best: ' + best, W - 16, 32);
+        ctx.fillText('Best: ' + best + '%', W - 16, 32);
+        // progress bar
+        ctx.fillStyle = 'rgba(214,92,255,0.25)';
+        ctx.fillRect(W / 2 - 100, 18, 200, 8);
+        ctx.fillStyle = '#d65cff';
+        ctx.fillRect(W / 2 - 100, 18, 200 * Math.min(1, dist / levelEnd), 8);
+        ctx.fillStyle = '#f3e6ff';
 
         ctx.textAlign = 'center';
         if (state === 'ready') {
           ctx.font = 'bold 34px Arial';
-          ctx.fillText(mode === 'fingerdash' ? 'Fingerdash' : 'Geometry Dash', W / 2, 140);
+          ctx.fillText('Fingerdash', W / 2, 140);
           ctx.font = '22px Arial';
           ctx.fillText('Press Space or click to start', W / 2, 180);
         } else if (state === 'dead') {
@@ -990,11 +980,7 @@
           ctx.font = 'bold 40px Arial';
           ctx.fillText('Game Over', W / 2, 150);
           ctx.font = '22px Arial';
-          if (mode === 'fingerdash') {
-            ctx.fillText(Math.floor(dist / levelEnd * 100) + '%   Best: ' + best + '%', W / 2, 190);
-          } else {
-            ctx.fillText('Score: ' + Math.floor(dist / 10) + '   Best: ' + best, W / 2, 190);
-          }
+          ctx.fillText(Math.floor(dist / levelEnd * 100) + '%   Best: ' + best + '%', W / 2, 190);
           ctx.fillText('Press Space or click to try again', W / 2, 225);
         } else if (state === 'won') {
           ctx.fillStyle = 'rgba(18,0,42,0.6)';
@@ -1036,16 +1022,6 @@
 
       document.getElementById('gdBtn').addEventListener('click', openGame);
       document.getElementById('gdClose').addEventListener('click', closeGame);
-      var bests = { endless: 0, fingerdash: 0 };
-      document.getElementById('gdMode').addEventListener('click', function (e) {
-        bests[mode] = best;
-        mode = mode === 'endless' ? 'fingerdash' : 'endless';
-        best = bests[mode];
-        this.textContent = 'Level: ' + (mode === 'endless' ? 'Endless' : 'Fingerdash');
-        this.blur();
-        reset();
-        state = 'ready';
-      });
 
       document.addEventListener('keydown', function (e) {
         if (!open) return;
