@@ -155,6 +155,19 @@
       color: var(--text);
       cursor: pointer;
     }
+    #gdMode {
+      position: absolute;
+      top: 16px;
+      left: 16px;
+      font-size: 0.85rem;
+      font-weight: bold;
+      padding: 8px 13px;
+      border: 2px solid var(--neon2);
+      border-radius: 8px;
+      background: var(--bg);
+      color: var(--neon2);
+      cursor: pointer;
+    }
     #gdHelp {
       margin-top: 12px;
       font-size: 1rem;
@@ -457,6 +470,7 @@
   </div>
 
   <div id="gdOverlay">
+    <button id="gdMode">Level: Fingerdash</button>
     <button id="gdClose">✕ Close (Esc)</button>
     <canvas id="gdCanvas" width="800" height="400"></canvas>
     <div id="gdHelp">Jump: Space / ↑ / click / tap</div>
@@ -644,6 +658,7 @@
       var airJumps = 1; // extra mid-air jumps left (double jump)
       var coyote = 0; // grace time after running off an edge
       var levelEnd = 0;
+      var mode = 'fingerdash'; // fingerdash | waves (Cold Waves)
       var ship = false; // true for both plane and wave
       var wave = false;
       var ufo = false;
@@ -673,10 +688,18 @@
         coyote = 0;
         airJumps = 1;
         buildLevel();
+        if (mode === 'waves') {
+          // Cold Waves: the whole level is flown as the wave
+          ship = true;
+          wave = true;
+          y = (CEIL + GROUND) / 2 - SIZE / 2;
+          onGround = false;
+        }
       }
 
       // fixed hand-made level: pattern codes laid out one after another
       function buildLevel() {
+        if (mode === 'waves') { buildWaves(); return; }
         var seq = ['s1', 's2', 'sp', 's1', 'b2', 's2', 'bs', 's3', 's3', 'sp', 's4', 'sp', 'bs', 'o6',
                    's4', 's5', 'b3', 'sp', 'sp', 't', 's2', 's2', 'bs', 's3', 'o13', 's3', 'sp', 'P',
                    'f120', 'c140', 'f160', 'c120', 'f140', 'c160', 'f120', 'c140', 'f140', 'C', 's1', 'bs', 's4', 'sp',
@@ -731,8 +754,42 @@
         levelEnd = x + 200;
       }
 
+      // Cold Waves: a long, fixed (seeded) corridor of pillar gaps that gets narrower,
+      // tighter and zig-zaggier, with sudden bursts of fast up-down turns
+      function buildWaves() {
+        var seed = 20251031;
+        function rnd() {
+          seed = (seed + 0x6D2B79F5) | 0;
+          var t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+          t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+          return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+        }
+        var N = 320, x = 700, c = (CEIL + GROUND) / 2, dir = 1, burst = 0;
+        for (var i = 0; i < N; i++) {
+          var p = i / N;
+          var g = Math.round(150 - 45 * p);   // gap height: 150 -> 105
+          var sp = Math.round(200 - 50 * p);  // column spacing: 200 -> 150
+          var maxD = (sp - 40) * 0.75;        // biggest sideways jump the wave can still make
+          var lo = CEIL + g / 2 + 8, hi = GROUND - g / 2 - 8;
+          if (burst > 0) {
+            c += dir * maxD * 0.8;
+            dir = -dir;
+            burst--;
+          } else {
+            c += (rnd() * 2 - 1) * maxD;
+            if (i > 10 && rnd() < 0.08) { burst = 5 + Math.floor(rnd() * 4); dir = c > (lo + hi) / 2 ? -1 : 1; }
+          }
+          c = Math.max(lo, Math.min(hi, c));
+          obstacles.push({ type: 'cpillar', x: x, w: SIZE, h: Math.round(c - g / 2 - CEIL) });
+          obstacles.push({ type: 'fpillar', x: x, w: SIZE, h: Math.round(GROUND - (c + g / 2)) });
+          x += sp;
+        }
+        levelEnd = x + 300;
+      }
+
       // the level speeds up as you go: 470 px/s at the start, up to 620 px/s
       function speedAt(d) {
+        if (mode === 'waves') return 500 + 120 * Math.min(1, d / levelEnd);
         return 470 + 150 * Math.min(1, d / levelEnd);
       }
 
@@ -1110,7 +1167,7 @@
         ctx.textAlign = 'center';
         if (state === 'ready') {
           ctx.font = 'bold 34px Arial';
-          ctx.fillText('Fingerdash', W / 2, 140);
+          ctx.fillText(mode === 'waves' ? 'Cold Waves' : 'Fingerdash', W / 2, 140);
           ctx.font = '22px Arial';
           ctx.fillText('Press Space or click to start', W / 2, 180);
         } else if (state === 'dead') {
@@ -1162,6 +1219,16 @@
 
       document.getElementById('gdBtn').addEventListener('click', openGame);
       document.getElementById('gdClose').addEventListener('click', closeGame);
+      var bests = { fingerdash: 0, waves: 0 };
+      document.getElementById('gdMode').addEventListener('click', function () {
+        bests[mode] = best;
+        mode = mode === 'fingerdash' ? 'waves' : 'fingerdash';
+        best = bests[mode];
+        this.textContent = 'Level: ' + (mode === 'waves' ? 'Cold Waves' : 'Fingerdash');
+        this.blur();
+        reset();
+        state = 'ready';
+      });
 
       document.addEventListener('keydown', function (e) {
         if (!open) return;
