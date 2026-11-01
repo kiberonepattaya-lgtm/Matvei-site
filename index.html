@@ -227,6 +227,53 @@
       min-height: 1.5em;
       margin: 16px 0 0;
     }
+    #trailCanvas {
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 9;
+      pointer-events: none;
+    }
+    #trailPanel {
+      position: fixed;
+      bottom: 16px;
+      left: 16px;
+      z-index: 4;
+      width: 190px;
+      padding: 10px 14px;
+      text-align: left;
+      font-size: 0.9rem;
+      background: rgba(26, 0, 51, 0.9);
+      color: var(--text);
+      border: 2px solid var(--neon);
+      border-radius: 8px;
+      box-shadow: 0 0 10px var(--neon);
+    }
+    #trailPanel summary {
+      cursor: pointer;
+      font-weight: bold;
+      color: var(--neon2);
+    }
+    #trailPanel label {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-top: 8px;
+    }
+    #trailPanel select, #trailPanel input[type="color"] {
+      background: var(--bg);
+      color: var(--neon2);
+      border: 2px solid var(--neon2);
+      border-radius: 6px;
+      font-size: 0.9rem;
+    }
+    #trailPanel input[type="color"] {
+      width: 44px;
+      height: 28px;
+      padding: 0;
+    }
     #tkOverlay {
       display: none;
       position: fixed;
@@ -458,6 +505,32 @@
   <div id="partyBanner">🎉 Party time, Matvei's site is in the house! 🥳 <button id="partyClose" aria-label="dismiss">✕</button></div>
   <!-- /party-mode -->
 
+  <canvas id="trailCanvas"></canvas>
+  <details id="trailPanel" open>
+    <summary>✨ Trail settings</summary>
+    <label>Trail
+      <select id="trailOn"><option value="on" selected>On</option><option value="off">Off</option></select>
+    </label>
+    <label>Shape
+      <select id="trailShape">
+        <option value="shark" selected>🦈 Shark</option>
+        <option value="circle">Circle</option>
+        <option value="star">Star</option>
+        <option value="heart">Heart</option>
+      </select>
+    </label>
+    <label>Colour
+      <input type="color" id="trailColor" value="#d65cff">
+    </label>
+    <label>Length
+      <select id="trailLength">
+        <option value="short">Short</option>
+        <option value="medium">Medium</option>
+        <option value="long" selected>Long</option>
+      </select>
+    </label>
+  </details>
+
   <button id="colorBtn">🎨 Change colour</button>
   <button id="gdBtn">🎮 Geometry Dash</button>
 
@@ -582,6 +655,93 @@
         last = n;
         document.getElementById('factText').textContent = facts[n];
       });
+    })();
+
+    // ---------- Mouse trail ----------
+    (function () {
+      var canvas = document.getElementById('trailCanvas');
+      var ctx = canvas.getContext('2d');
+      var points = [];
+      var inside = false;
+      var lengths = { short: 12, medium: 25, long: 45 };
+      var sharkPath = new Path2D('M12 0 C6 -7 -4 -7 -10 -2 L-16 -8 L-14 0 L-16 8 L-10 2 C-4 7 6 7 12 0 Z M-1 -6 L3 -12 L4 -6 Z');
+
+      function resize() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+      }
+      resize();
+      window.addEventListener('resize', resize);
+
+      function opt(id) { return document.getElementById(id).value; }
+
+      document.addEventListener('mousemove', function (e) {
+        inside = true;
+        if (opt('trailOn') !== 'on') return;
+        var last = points[points.length - 1];
+        var angle = last ? Math.atan2(e.clientY - last.y, e.clientX - last.x) : 0;
+        if (last && Math.abs(e.clientX - last.x) + Math.abs(e.clientY - last.y) < 2) angle = last.a;
+        points.push({ x: e.clientX, y: e.clientY, a: angle });
+        var max = lengths[opt('trailLength')];
+        while (points.length > max) points.shift();
+      });
+      document.documentElement.addEventListener('mouseleave', function () {
+        inside = false;
+        points = [];
+      });
+      document.documentElement.addEventListener('mouseenter', function () { inside = true; });
+      document.getElementById('trailOn').addEventListener('change', function () {
+        if (this.value !== 'on') points = [];
+      });
+
+      function drawShape(shape, p, size) {
+        ctx.save();
+        ctx.translate(p.x, p.y);
+        if (shape === 'shark') {
+          ctx.rotate(p.a);
+          ctx.scale(size / 12, size / 12);
+          ctx.fill(sharkPath);
+        } else if (shape === 'circle') {
+          ctx.beginPath();
+          ctx.arc(0, 0, size, 0, Math.PI * 2);
+          ctx.fill();
+        } else if (shape === 'star') {
+          ctx.beginPath();
+          for (var i = 0; i < 10; i++) {
+            var r = i % 2 ? size * 0.45 : size;
+            var a = -Math.PI / 2 + i * Math.PI / 5;
+            ctx.lineTo(Math.cos(a) * r, Math.sin(a) * r);
+          }
+          ctx.closePath();
+          ctx.fill();
+        } else {
+          ctx.beginPath();
+          ctx.moveTo(0, size * 0.8);
+          ctx.bezierCurveTo(-size * 1.6, -size * 0.2, -size * 0.6, -size * 1.2, 0, -size * 0.4);
+          ctx.bezierCurveTo(size * 0.6, -size * 1.2, size * 1.6, -size * 0.2, 0, size * 0.8);
+          ctx.fill();
+        }
+        ctx.restore();
+      }
+
+      function frame() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        if (inside && opt('trailOn') === 'on') {
+          var shape = opt('trailShape');
+          ctx.fillStyle = opt('trailColor');
+          var n = points.length;
+          for (var i = 0; i < n; i++) {
+            var t = (i + 1) / n;
+            ctx.globalAlpha = t * 0.9;
+            drawShape(shape, points[i], (shape === 'shark' ? 6 : 3) + t * (shape === 'shark' ? 12 : 8));
+          }
+          ctx.globalAlpha = 1;
+          // let the tail shrink when the mouse stops
+          if (n > 0 && Math.random() < 0.3) points.shift();
+        }
+        requestAnimationFrame(frame);
+      }
+      frame();
     })();
 
     // ---------- Fireworks background ----------
