@@ -514,6 +514,8 @@
     <label>Shape
       <select id="trailShape">
         <option value="shark" selected>🦈 Shark</option>
+        <option value="aura">🔮 Aura</option>
+        <option value="bow">🎀 Bow</option>
         <option value="circle">Circle</option>
         <option value="star">Star</option>
         <option value="heart">Heart</option>
@@ -701,6 +703,28 @@
           ctx.rotate(p.a);
           ctx.scale(size / 12, size / 12);
           ctx.fill(sharkPath);
+        } else if (shape === 'aura') {
+          var r2 = size * 3;
+          var g = ctx.createRadialGradient(0, 0, 0, 0, 0, r2);
+          g.addColorStop(0, ctx.fillStyle);
+          g.addColorStop(1, 'rgba(0,0,0,0)');
+          ctx.fillStyle = g;
+          ctx.beginPath();
+          ctx.arc(0, 0, r2, 0, Math.PI * 2);
+          ctx.fill();
+        } else if (shape === 'bow') {
+          var s = size * 1.2;
+          ctx.beginPath();
+          ctx.moveTo(0, 0);
+          ctx.bezierCurveTo(-s * 0.5, -s, -s * 1.8, -s * 0.9, -s * 1.6, 0);
+          ctx.bezierCurveTo(-s * 1.8, s * 0.9, -s * 0.5, s, 0, 0);
+          ctx.moveTo(0, 0);
+          ctx.bezierCurveTo(s * 0.5, -s, s * 1.8, -s * 0.9, s * 1.6, 0);
+          ctx.bezierCurveTo(s * 1.8, s * 0.9, s * 0.5, s, 0, 0);
+          ctx.fill();
+          ctx.beginPath();
+          ctx.arc(0, 0, s * 0.35, 0, Math.PI * 2);
+          ctx.fill();
         } else if (shape === 'circle') {
           ctx.beginPath();
           ctx.arc(0, 0, size, 0, Math.PI * 2);
