@@ -206,6 +206,27 @@
     #colorBtn:hover {
       background: var(--bg2);
     }
+    #factBtn {
+      font-size: 1.1rem;
+      font-weight: bold;
+      padding: 10px 20px;
+      margin: 24px 0 0;
+      border: 2px solid var(--neon2);
+      border-radius: 8px;
+      background: var(--bg);
+      color: var(--neon2);
+      cursor: pointer;
+    }
+    #factBtn:hover {
+      background: var(--bg2);
+    }
+    #factText {
+      font-size: 1.2rem;
+      font-weight: bold;
+      max-width: 600px;
+      min-height: 1.5em;
+      margin: 16px 0 0;
+    }
     #tkOverlay {
       display: none;
       position: fixed;
@@ -446,6 +467,8 @@
     <p>My hobby is playing football.</p>
     <button id="boomBtn" aria-label="boom">⚽</button>
     <p id="message">Press the ball!</p>
+    <button id="factBtn">🧠 Random Fact</button>
+    <p id="factText" aria-live="polite"></p>
     <section>
       <h2>About Me</h2>
       <h3>Hi, I'm Matvei</h3>
@@ -523,6 +546,43 @@
     document.getElementById('boomBtn').addEventListener('click', function () {
       document.getElementById('message').textContent = 'Boom,<Matvei>';
     });
+
+    // ---------- Random Fact button ----------
+    (function () {
+      var facts = [
+        '🐙 Octopuses have three hearts and blue blood.',
+        '🍯 Honey never spoils - edible honey has been found in ancient Egyptian tombs.',
+        '🪐 A day on Venus is longer than its year.',
+        '🌊 More than 80% of the ocean has never been explored.',
+        '🐘 Elephants are the only animals that cannot jump.',
+        '⚡ Lightning is about five times hotter than the surface of the Sun.',
+        '🏛️ Cleopatra lived closer in time to the Moon landing than to the building of the Great Pyramid.',
+        '🐌 A snail can sleep for up to three years.',
+        '🌕 The Moon is slowly drifting away from Earth by about 3.8 cm every year.',
+        '🦈 Sharks existed before trees - they are over 400 million years old.',
+        '🔥 Our Sun is so big that about one million Earths could fit inside it.',
+        '🐧 Penguins propose to their mates with a pebble.',
+        '🧬 Humans share about 60% of their DNA with bananas.',
+        '🌋 The tallest volcano in the solar system is Olympus Mons on Mars - nearly three times taller than Mount Everest.',
+        '🦋 Butterflies taste with their feet.',
+        '🏺 The ancient Romans used crushed seashells and volcanic ash to make long-lasting concrete.',
+        '🐬 Dolphins give each other names using unique whistles.',
+        '🧊 Hot water can sometimes freeze faster than cold water - it is called the Mpemba effect.',
+        '🌌 There are more stars in the universe than grains of sand on all of Earth\'s beaches.',
+        '🐝 A honeybee visits about 2 million flowers to make one pound of honey.',
+        '🦑 The giant squid has the biggest eyes in the animal kingdom - as large as a dinner plate.',
+        '🚀 Footprints on the Moon can last millions of years because there is no wind to blow them away.',
+        '🏰 The Great Wall of China is not visible from space with the naked eye.',
+        '🦒 A giraffe has the same number of neck bones as a human - just seven.'
+      ];
+      var last = -1;
+      document.getElementById('factBtn').addEventListener('click', function () {
+        var n;
+        do { n = Math.floor(Math.random() * facts.length); } while (n === last);
+        last = n;
+        document.getElementById('factText').textContent = facts[n];
+      });
+    })();
 
     // ---------- Fireworks background ----------
     (function () {
