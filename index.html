@@ -227,6 +227,96 @@
       min-height: 1.5em;
       margin: 16px 0 0;
     }
+    #spookyBtn {
+      position: fixed;
+      top: 62px;
+      left: 16px;
+      z-index: 2;
+      font-size: 1rem;
+      font-weight: bold;
+      padding: 9px 16px;
+      border: 2px solid var(--neon2);
+      border-radius: 8px;
+      background: var(--bg);
+      color: var(--neon2);
+      cursor: pointer;
+    }
+    #spookyBtn:hover {
+      background: var(--bg2);
+    }
+    #spookyModal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 11;
+      background: rgba(0, 0, 0, 0.6);
+      align-items: center;
+      justify-content: center;
+    }
+    #spookyModal.open {
+      display: flex;
+    }
+    #spookyBox {
+      position: relative;
+      width: 320px;
+      max-width: 90vw;
+      padding: 24px 28px;
+      background: var(--bg2);
+      color: var(--text);
+      border: 3px solid var(--neon2);
+      border-radius: 12px;
+      box-shadow: 0 0 10px var(--neon), 0 0 24px var(--neon);
+      text-align: center;
+    }
+    #spookyBox h2 {
+      margin: 0 0 12px;
+      font-size: 1.5rem;
+    }
+    #spookyName {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 8px;
+      font-size: 1rem;
+      border: 2px solid var(--neon2);
+      border-radius: 8px;
+      background: var(--bg);
+      color: var(--text);
+    }
+    #spookyGo {
+      margin-top: 12px;
+      font-size: 1rem;
+      font-weight: bold;
+      padding: 9px 16px;
+      border: 2px solid var(--neon2);
+      border-radius: 8px;
+      background: var(--bg);
+      color: var(--neon2);
+      cursor: pointer;
+    }
+    #spookyGo:hover {
+      background: var(--neon);
+      color: var(--text);
+    }
+    #spookyResult {
+      margin: 16px 0 0;
+      min-height: 1.5em;
+      font-size: 1.3rem;
+      font-weight: bold;
+      text-shadow: var(--glow);
+    }
+    #spookyClose {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      font-size: 1rem;
+      font-weight: bold;
+      padding: 4px 9px;
+      border: 2px solid var(--neon2);
+      border-radius: 8px;
+      background: var(--bg);
+      color: var(--neon2);
+      cursor: pointer;
+    }
     #trailCanvas {
       position: fixed;
       inset: 0;
@@ -534,6 +624,17 @@
   </details>
 
   <button id="colorBtn">🎨 Change colour</button>
+  <button id="spookyBtn">👻 Spooky Name Generator</button>
+
+  <div id="spookyModal">
+    <div id="spookyBox" role="dialog" aria-labelledby="spookyTitle">
+      <button id="spookyClose" aria-label="close">✕</button>
+      <h2 id="spookyTitle">🎃 What's your name?</h2>
+      <input type="text" id="spookyName" maxlength="30" placeholder="Type your name" autocomplete="off">
+      <button id="spookyGo">Get my spooky name</button>
+      <p id="spookyResult" aria-live="polite"></p>
+    </div>
+  </div>
   <button id="gdBtn">🎮 Geometry Dash</button>
 
   <div class="content">
@@ -657,6 +758,30 @@
         last = n;
         document.getElementById('factText').textContent = facts[n];
       });
+    })();
+
+    // ---------- Spooky Name Generator ----------
+    (function () {
+      var titles = ['Count', 'Lord', 'Lady', 'Baron', 'Captain', 'Professor', 'Sir', 'Dark', 'Doctor', 'Queen', 'King', 'Madame'];
+      var endings = ['the Moonlit', 'the Ghostly', 'the Haunted', 'the Wicked', 'of the Graveyard', 'the Pumpkin King', 'the Bat Whisperer',
+        'the Shadow', 'the Cursed', 'of the Dark Forest', 'the Spooky', 'the Midnight Howler', 'the Cobweb Keeper', 'the Fearless Ghoul'];
+      var modal = document.getElementById('spookyModal');
+      var input = document.getElementById('spookyName');
+      var result = document.getElementById('spookyResult');
+      function pick(a) { return a[Math.floor(Math.random() * a.length)]; }
+      function open() { modal.classList.add('open'); result.textContent = ''; input.value = ''; input.focus(); }
+      function close() { modal.classList.remove('open'); }
+      function generate() {
+        var name = input.value.trim();
+        if (!name) { result.textContent = 'Please type your name first!'; input.focus(); return; }
+        result.textContent = '🦇 ' + pick(titles) + ' ' + name + ' ' + pick(endings) + ' 🦇';
+      }
+      document.getElementById('spookyBtn').addEventListener('click', open);
+      document.getElementById('spookyClose').addEventListener('click', close);
+      document.getElementById('spookyGo').addEventListener('click', generate);
+      input.addEventListener('keydown', function (e) { if (e.key === 'Enter') generate(); });
+      modal.addEventListener('click', function (e) { if (e.target === modal) close(); });
+      document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && modal.classList.contains('open')) close(); });
     })();
 
     // ---------- Mouse trail ----------
